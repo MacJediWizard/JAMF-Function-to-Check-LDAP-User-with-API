@@ -14,12 +14,9 @@
 #	Jamf Variable Label names
 #
 #	$4 -eq JAMF Instance URL (e.g. https://<YourJamf>.jamfcloud.com)
-#	$5 -eq Your JAMF API Username
-#	$6 -eq Your JAMF API Password
-#
-#	To test or use without using JAMF Policy you can just send 3 empty arguments 
-#	to the script. See example below.
-#	(e.g. Function-to-Check-LDAP-User-with-API.sh empty1 empty2 empty3 $4 $5 $6)
+#	$5 -eq Your JAMF JIM Server Name
+#	$6 -eq Your JAMF API Username
+#	$7 -eq Your JAMF API Password
 #
 ##########################################################################################
 
@@ -52,8 +49,9 @@
 
 # JAMF API Information
 URL="${4}"
-username="${5}"
-password="${6}"
+JIMServerName="${5}"
+username="${6}"
+password="${7}"
 
 # Variablles
 listUsers="$(/usr/bin/dscl . list /Users UniqueID | awk '$2 > 1000 {print $1}') FINISHED"
@@ -70,7 +68,7 @@ until [ "$netName" == "FINISHED" ]; do
 		echo ${netName}
 		# Set up Function to process LDAP Request
 		echo "Checking to verify if ${netName} is in LDAP User before we process."
-		verifyUserFromLDAP=(`/usr/bin/curl "$URL/JSSResource/ldapservers/name/JIM-Server/user/${netName}" \
+		verifyUserFromLDAP=(`/usr/bin/curl "$URL/JSSResource/ldapservers/name/${JIMServerName}/user/${netName}" \
 								--silent \
 								--request GET \
 								--user "$username:$password" \
