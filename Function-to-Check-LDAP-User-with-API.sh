@@ -56,7 +56,7 @@ password="${7}"
 # Variablles
 listUsers="$(/usr/bin/dscl . list /Users UniqueID | awk '$2 > 1000 {print $1}') FINISHED"
 
-until [ "$netName" == "FINISHED" ]; do
+until [ "$user" == "FINISHED" ]; do
 	
 	for netName in $listUsers; do
 		
