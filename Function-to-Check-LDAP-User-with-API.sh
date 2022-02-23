@@ -9,18 +9,18 @@
 #	Version 1.0	- Initial Creation of Script.
 #
 #	This Script will check if the Users in the local Mac are in LDAP with a 
-#	JIM Server request through JAMP API.
+#	JIM Server request through JAMP API. It will get the JIM Server name from jamf 
+#	API request. 
 #
-#	Jamf Variable Label names
+#	Jamf Variable Label Names
 #
 #	$4 -eq JAMF Instance URL (e.g. https://<YourJamf>.jamfcloud.com)
-#	$5 -eq Your JAMF JIM Server Name
-#	$6 -eq Your JAMF API Username
-#	$7 -eq Your JAMF API Password
+#	$5 -eq Your JAMF API Username
+#	$6 -eq Your JAMF API Password
 #
 #	To test or use without using JAMF Policy you can just send 3 empty arguments 
 #	to the script. See example below.
-#	(e.g. Function-to-Check-LDAP-User-with-API.sh empty1 empty2 empty3 $4 $5 $6 $7)
+#	(e.g. Function-to-Check-LDAP-User-with-API.sh empty1 empty2 empty3 $4 $5 $6)
 #
 ##########################################################################################
 
@@ -51,15 +51,28 @@
 #
 ##########################################################################################
 
-# JAMF API Information
+##########################################################################################
+# JAMF API information
+##########################################################################################
 URL="${4}"
-JIMServerName="${5}"
-username="${6}"
-password="${7}"
+username="${5}"
+password="${6}"
+JIMServerName=(`/usr/bin/curl "$URL/JSSResource/ldapservers" \
+								--silent \
+								--request GET \
+								--user "$username:$password" \
+								| /usr/bin/xpath -e "//ldap_servers/ldap_server/name/text()" 2> /dev/null`)
 
-# Variablles
+
+##########################################################################################
+# Variables
+##########################################################################################
 listUsers="$(/usr/bin/dscl . list /Users UniqueID | awk '$2 > 1000 {print $1}') FINISHED"
 
+
+##########################################################################################
+# Core Script
+##########################################################################################
 until [ "$user" == "FINISHED" ]; do
 	
 	for netName in $listUsers; do
@@ -71,7 +84,7 @@ until [ "$user" == "FINISHED" ]; do
 		
 		echo ${netName}
 		# Set up Function to process LDAP Request
-		echo "Checking to verify if ${netName} is in LDAP User before we process."
+		echo "Checking to verify if ${netName} is an LDAP User before we process."
 		verifyUserFromLDAP=(`/usr/bin/curl "$URL/JSSResource/ldapservers/name/${JIMServerName}/user/${netName}" \
 								--silent \
 								--request GET \
